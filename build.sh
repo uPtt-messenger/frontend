@@ -3,7 +3,6 @@ set -Eeuo pipefail
 
 function build() {
     pnpm run build
-	cp -r dist build-packages
 }
 
 function script_usage() {
