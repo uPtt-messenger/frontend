@@ -1,8 +1,8 @@
-appId: com.example.nextron
-productName: My Nextron App
-copyright: Copyright © 2018 Yoshihide Shiono
+appId: cc.uptt.messenger
+productName: uPtt Messenger
+copyright: https://github.com/uPtt-messenger/uPtt
 directories:
-  output: dist
+  output: build-packages
   buildResources: resources
 files:
   - from: .
