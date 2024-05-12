@@ -1,6 +1,7 @@
 import path from "path";
 import { app, ipcMain } from "electron";
 import serve from "electron-serve";
+import axios from "axios";
 import { createWindow } from "./helpers";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -33,6 +34,20 @@ if (isProd) {
 
 app.on("window-all-closed", () => {
   app.quit();
+});
+
+ipcMain.on("getMessages", async (event) => {
+  try {
+    const { data } = await axios.get("http://localhost:16180/pull/", {
+      data: {
+        channel: "to_ui",
+      },
+    });
+    console.log(data);
+    event.reply("messages", data);
+  } catch (e) {
+    console.error(e);
+  }
 });
 
 ipcMain.on("message", async (event, arg) => {

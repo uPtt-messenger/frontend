@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Link as ChakraLink,
   Button,
@@ -10,9 +10,63 @@ import {
   Flex,
   Text,
 } from "@chakra-ui/react";
+import axios from "axios";
 import Router from "next/router";
 
 export default function SignInComponent() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [msgs, setMsgs] = useState([]);
+
+  const fetchMsg = async () => {
+    window.ipc.send("getMessages", {});
+  };
+
+  useEffect(() => {
+    window.ipc.on("messages", (data) => {
+      if (Array.isArray(data?.messages)) {
+        setMsgs(data.messages);
+      } else if (Array.isArray(data)) {
+        setMsgs(data);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    const msg = msgs.find(
+      (msg) => msg.category === "status" && msg.action === "login",
+    );
+    if (msg) {
+      if (msg.state === "SUCCESS") {
+        Router.push("/home");
+      } else {
+        setError("登入失敗：" + msg.message);
+      }
+    }
+  }, [msgs]);
+
+  const login = async (e) => {
+    e.preventDefault();
+    const msg = {
+      channel: "to_backend",
+      message: JSON.stringify({
+        category: "login",
+        username,
+        password,
+        reply_channel: "to_ui",
+      }),
+    };
+
+    try {
+      const { data } = await axios.post("http://localhost:16180/push/", msg);
+      await fetchMsg();
+    } catch (err) {
+      setError("登入失敗：failed to connect to backend");
+      console.error(err);
+    }
+  };
+
   return (
     <Flex
       minH="100vh"
@@ -48,7 +102,9 @@ export default function SignInComponent() {
                 <FormLabel>PTT 帳號</FormLabel>
                 <Input
                   type="text"
-                  name="user"
+                  name="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   variant="filled"
                   focusBorderColor="blue.500"
                 />
@@ -58,18 +114,22 @@ export default function SignInComponent() {
                 <Input
                   type="password"
                   name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
                   variant="filled"
                   focusBorderColor="blue.500"
                 />
               </FormControl>
+              <Text color="red.500">{error}</Text>
               <Button
                 type="submit"
                 colorScheme="blue"
                 size="lg"
                 fontSize="md"
                 w="full"
-                onClick={() => Router.push("/home")}
+                isDisabled={!username || !password}
+                onClick={login}
               >
                 登入
               </Button>
