@@ -10,57 +10,40 @@ import {
   Flex,
   Text,
 } from "@chakra-ui/react";
-import axios from "axios";
 import Router from "next/router";
+import useMessage from "./hooks/useMessage";
+import type { StatusMessage } from "./hooks/useMessage";
 
 export default function SignInComponent() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [msgs, setMsgs] = useState([]);
-
-  const fetchMsg = async () => {
-    window.ipc.send("getMessages", {});
-  };
+  const { sendMessage, messages } = useMessage();
 
   useEffect(() => {
-    window.ipc.on("messages", (data) => {
-      if (Array.isArray(data?.messages)) {
-        setMsgs(data.messages);
-      } else if (Array.isArray(data)) {
-        setMsgs(data);
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    const msg = msgs.find(
+    const msg = messages.find(
       (msg) => msg.category === "status" && msg.action === "login",
-    );
+    ) as StatusMessage;
     if (msg) {
       if (msg.state === "SUCCESS") {
-        Router.push("/home");
+        Router.push({
+          pathname: "/home",
+          query: { username },
+        });
       } else {
         setError("登入失敗：" + msg.message);
       }
     }
-  }, [msgs]);
+  }, [messages]);
 
   const login = async (e) => {
     e.preventDefault();
-    const msg = {
-      channel: "to_backend",
-      message: JSON.stringify({
+    try {
+      sendMessage({
         category: "login",
         username,
         password,
-        reply_channel: "to_ui",
-      }),
-    };
-
-    try {
-      const { data } = await axios.post("http://localhost:16180/push/", msg);
-      await fetchMsg();
+      });
     } catch (err) {
       setError("登入失敗：failed to connect to backend");
       console.error(err);
