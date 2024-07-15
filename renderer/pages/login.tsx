@@ -11,8 +11,8 @@ import {
   Text,
 } from "@chakra-ui/react";
 import Router from "next/router";
-import useMessage from "./hooks/useMessage";
-import type { StatusMessage } from "./hooks/useMessage";
+import useMessage from "../hooks/useMessage";
+import type { StatusMessage } from "../hooks/useMessage";
 
 export default function SignInComponent() {
   const [username, setUsername] = useState("");
