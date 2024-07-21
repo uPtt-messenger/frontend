@@ -23,7 +23,7 @@ import {
 import { AddIcon, SearchIcon } from "@chakra-ui/icons";
 import { withRouter } from "next/router";
 import NextLink from "next/link";
-import useUptt from "./hooks/useUptt";
+import useUptt from "../hooks/useUptt";
 
 const bg = "white";
 const borderColor = "gray.200";
